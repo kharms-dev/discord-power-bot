@@ -1,0 +1,27 @@
+{
+    "packageRules": [
+        {
+            "matchUpdateTypes": [
+                "minor",
+                "patch",
+                "pin",
+                "digest"
+            ],
+            "automerge": true
+        },
+        {
+            "datasources": [
+                "docker"
+            ],
+            "updateTypes": [
+                "major"
+            ],
+            "enabled": true
+        }
+    ],
+    "extends": [
+        "config:base",
+        "schedule:weekly",
+        "docker:pinDigests"
+    ]
+}
