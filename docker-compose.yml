@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  boilerjuice-api:
+  discord-power-bot:
     image: ghcr.io/mylesagray/discord-power-bot:latest
     build: .
     env_file: .env
