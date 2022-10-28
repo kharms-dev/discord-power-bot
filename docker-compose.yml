@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   discord-power-bot:
-    image: ghcr.io/mylesagray/discord-power-bot:latest
+    image: ghcr.io/kharms-dev/discord-power-bot:latest
     build: .
     env_file: .env
     restart: unless-stopped
