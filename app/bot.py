@@ -60,7 +60,7 @@ async def on_ready():
     print('Connected to API')
 
 
-@ bot.slash_command(name="boot", description="Boots the game server")
+@bot.slash_command(name="boot", description="Boots the game server")
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -75,7 +75,7 @@ async def _boot(ctx):
         traceback.print_exc()
 
 
-@ bot.slash_command(name="shutdown", description="Shuts down the game server")
+@bot.slash_command(name="shutdown", description="Shuts down the game server")
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -89,7 +89,7 @@ async def _shutdown(ctx):
         traceback.print_exc()
 
 
-@ bot.slash_command(name="reboot", description="Reboots the game server")
+@bot.slash_command(name="reboot", description="Reboots the game server")
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
@@ -103,7 +103,7 @@ async def _reboot(ctx):
         traceback.print_exc()
 
 
-@ bot.slash_command(name="status", description="Checks current power status of game server")
+@bot.slash_command(name="status", description="Checks current power status of game server")
 async def _status(ctx):
     try:
         response = requests.get(LIVENESS_URL, timeout=2)
