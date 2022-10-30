@@ -5,10 +5,10 @@ server config info
 import traceback
 import json
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 
 
-class ServerType(Enum):
+class ServerType(IntEnum):
     """
     Enum for storing supported backend server types
     """
@@ -44,7 +44,7 @@ def add_server(name, ip_address, port, server_type, password=""):
                                 port=port, password=password, server_type=ServerType[server_type])
                 server_list[name] = server
                 return server
-            raise TypeError(f"Server type: {server_type} is invalid")
+            raise TypeError(f"Server type '{server_type}' is invalid")
         raise ValueError("Server name already taken")
     except Exception:
         print("Failed to add server")
@@ -101,13 +101,13 @@ def load_servers():
     servers = _load_settings()
     try:
         for server in servers:
-            if not server['server_type'] in ServerType.__members__:
-                raise TypeError(
-                    f"Server type: '{server['server_type']}' \
-                        for server '{server['name']}' is invalid")
+            #if not server['server_type'] in ServerType:
+            #    raise TypeError(
+            #        f"Server type: '{server['server_type']}' \
+            #            for server '{server['name']}' is invalid")
             server_obj = Server(name=server['name'], ip_address=server['ip_address'],
                                 port=server['port'], password=server['password'],
-                                server_type=ServerType[server['server_type']])
+                                server_type=ServerType(server['server_type']))
             update_server(server['name'], server_obj)
     except Exception:
         print("Couldn't load settings into bot")
