@@ -5,16 +5,16 @@ server config info
 import traceback
 import json
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import Enum
 
 
-class ServerType(IntEnum):
+class ServerType(str, Enum):
     """
     Enum for storing supported backend server types
     """
-    STEAM = 1
-    DCS = 2
-    SPACE_ENGINEERS = 3
+    STEAM = 'STEAM'
+    DCS = 'DCS'
+    SPACE_ENGINEERS = 'SPACE_ENGINNERS'
 
 
 @dataclass
@@ -88,7 +88,7 @@ def save_servers():
     """
     server_serialised = []
     for server in server_list.values():
-        print(server.server_type.name)
+        print(server.server_type.value)
         print(server.__dict__)
         server_serialised.append(server.__dict__)
     _save_settings(server_serialised)
@@ -101,10 +101,10 @@ def load_servers():
     servers = _load_settings()
     try:
         for server in servers:
-            #if not server['server_type'] in ServerType:
-            #    raise TypeError(
-            #        f"Server type: '{server['server_type']}' \
-            #            for server '{server['name']}' is invalid")
+            if not server['server_type'] in ServerType.__members__:
+                raise TypeError(
+                    f"Server type: '{server['server_type']}' \
+                       for server '{server['name']}' is invalid")
             server_obj = Server(name=server['name'], ip_address=server['ip_address'],
                                 port=server['port'], password=server['password'],
                                 server_type=ServerType(server['server_type']))
