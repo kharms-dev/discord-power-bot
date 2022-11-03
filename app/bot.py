@@ -19,30 +19,15 @@ def env_defined(key):
 DISCORD_CHANNEL = []
 # env variables are defaults, if no config file exists it'll be created.
 # If no env is set, stop the bot
-if not env_defined("DISCORD_TOKEN"):
-    print("Missing bot token from .env")
+try:
+    DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
+    WOL_URL = os.environ["WOL_URL"]
+    SHUTDOWN_URL = os.environ["SHUTDOWN_URL"]
+    REBOOT_URL = os.environ["REBOOT_URL"]
+    LIVENESS_URL = os.environ["LIVENESS_URL"]
+except KeyError as e:
+    print(f"Missing {str(e)} token from .env.")
     sys.exit()
-DISCORD_TOKEN = os.environ["DISCORD_TOKEN"]
-
-if not env_defined("WOL_URL"):
-    print("Missing wake on lan URL from .env")
-    sys.exit()
-WOL_URL = os.environ["WOL_URL"]
-
-if not env_defined("SHUTDOWN_URL"):
-    print("Missing shutdown URL from .env")
-    sys.exit()
-SHUTDOWN_URL = os.environ["SHUTDOWN_URL"]
-
-if not env_defined("REBOOT_URL"):
-    print("Missing liveness URL from .env")
-    sys.exit()
-REBOOT_URL = os.environ["REBOOT_URL"]
-
-if not env_defined("LIVENESS_URL"):
-    print("Missing liveness URL from .env")
-    sys.exit()
-LIVENESS_URL = os.environ["LIVENESS_URL"]
 
 intents = discord.Intents.default()
 DESC = "Bot to control the power to physical game server"
