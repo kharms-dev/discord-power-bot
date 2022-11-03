@@ -4,7 +4,7 @@ Queries SteamQuery, DCS and SpaceEngineers instances
 import traceback
 from steam import SteamQuery
 import network
-from server import Server
+from servers import Server
 
 
 def get_players(ipaddress: int, port: int, password="") -> dict:

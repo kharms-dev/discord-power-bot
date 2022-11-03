@@ -12,6 +12,8 @@ steamquery = "==1.0.2"
 pylint = "*"
 autopep8 = "*"
 mypy = "*"
+coverage = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.11"
