@@ -26,7 +26,7 @@ try:
     REBOOT_URL = os.environ["REBOOT_URL"]
     LIVENESS_URL = os.environ["LIVENESS_URL"]
 except KeyError as e:
-    print(f"Missing {e.args} token from .env")
+    print(f"Missing {e.args} token from .env.")
     sys.exit()
 
 intents = discord.Intents.default()
