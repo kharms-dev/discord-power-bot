@@ -6,7 +6,6 @@ import traceback
 import json
 import logging
 from enum import Enum
-from typing import Union
 from marshmallow import Schema, fields, validate
 
 logging.basicConfig(level=logging.WARN)
@@ -22,6 +21,10 @@ class ServerType(str, Enum):
 
 
 class Server(Schema):
+    """
+    Object that stores a given game server
+    configuration
+    """
     name = fields.Str()
     ip_address = fields.IP()
     port = fields.Int(validate=validate.Range(1, 65535))
