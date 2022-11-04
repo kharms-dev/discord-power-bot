@@ -5,8 +5,9 @@ server config info
 import traceback
 import json
 import logging
-from dataclasses import dataclass
 from enum import Enum
+from typing import Union
+from marshmallow import Schema, fields, validate
 
 logging.basicConfig(level=logging.WARN)
 
@@ -20,34 +21,33 @@ class ServerType(str, Enum):
     SPACE_ENGINEERS = 'SPACE_ENGINEERS'
 
 
-@dataclass
-class Server:
-    """
-    Object that stores a given game server
-    configuration
-    """
-    name: str
-    ip_address: str
-    port: int
-    server_type: ServerType
-    password: str
+class Server(Schema):
+    name = fields.Str()
+    ip_address = fields.IP()
+    port = fields.Int(validate=validate.Range(1, 65535))
+    password = fields.Str()
+    server_type = fields.Enum(ServerType)
 
 
 server_list = {}
 
 
-def add_server(name, ip_address, port, server_type, password=""):
+def add_server(name: str, ip_address: str, port: int, server_type: str, password: str = "") -> dict:
     """
     Adds a server to the actively monitored list
     """
     try:
         if not name in server_list:
-            if server_type in ServerType.__members__:
-                server = Server(name=name, ip_address=ip_address,
-                                port=port, server_type=ServerType[server_type], password=password)
-                server_list[name] = server
-                return server
-            raise TypeError(f"Server type '{server_type}' is invalid")
+            server_info = {
+                'name': name,
+                'ip_address': ip_address,
+                'port': port,
+                'server_type': server_type,
+                'password': password
+            }
+            server = Server().load(server_info)
+            server_list[name] = server
+            return server
         raise ValueError("Server name already taken")
     except Exception:
         logging.error("Failed to add server")
@@ -59,27 +59,23 @@ def delete_server(name):
     """
     Deletes a server from the actively monitored list
     """
-    try:
-        return server_list.pop(name)
-    except KeyError:
-        logging.error(f"Failed to delete server, '{name}' does not exist.")
-        traceback.print_exc()
-        raise
+    return server_list.pop(name)
 
 
-def update_server(name, server):
+def update_server(name: str, server_info: dict) -> bool:
     """
     Updates a server entry in the bot's monitoring list
     Side note: this is essentially the same op as add_server
     but without the duplicate key check to allow for overwrites
     """
     try:
+        server = Server().load(server_info)
         server_list[name] = server
         return True
-    except Exception:
+    except ValueError:
         logging.error("Failed to update server")
         traceback.print_exc()
-        raise
+        return False
 
 
 def get_server(name):
