@@ -29,9 +29,49 @@ except KeyError as e:
     print(f"Missing {str(e)} token from .env.")
     sys.exit()
 
+# Defaulting COOLDOWN to 300s unless set by the user
+if env_defined("COOLDOWN"):
+    COOLDOWN = os.environ["COOLDOWN"]
+else:
+    COOLDOWN = 300
+
 intents = discord.Intents.default()
 DESC = "Bot to control the power to physical game server"
 bot = discord.Bot(description=DESC, intents=intents)
+
+
+def check_cooldown(ctx):
+    """
+    Each of boot, shutdown, restart triggers a cooldown for itself.
+    This function is designed to link their cooldowns to avoid hangups.
+    """
+    if ctx.command.name in ["boot", "reboot", "shutdown"]:
+        boot_cd = bot.get_application_command(name="boot").is_on_cooldown(ctx)
+        reboot_cd = bot.get_application_command(name="reboot").is_on_cooldown(ctx)
+        shutdown_cd = bot.get_application_command(name="shutdown").is_on_cooldown(ctx)
+        if boot_cd or reboot_cd or shutdown_cd:
+            return False
+    return True
+
+
+async def on_application_command_error(ctx, error):
+    """
+    Responds to a user calling a function that's currently on cooldown.
+    """
+    if isinstance(error, discord.ext.commands.CommandOnCooldown):
+        cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
+        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. \
+                            Please wait another {cooldown}s before retrying.")
+    elif isinstance(error, discord.errors.CheckFailure):
+        boot_cd = bot.get_application_command(name="boot").is_on_cooldown(ctx)
+        reboot_cd = bot.get_application_command(name="reboot").is_on_cooldown(ctx)
+        shutdown_cd = bot.get_application_command(name="shutdown").is_on_cooldown(ctx)
+        # Since only one command can ever be on an individual cooldown, addition works
+        cooldown = round(boot_cd + reboot_cd + shutdown_cd)
+        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. \
+                            Please wait another {cooldown}s before retrying.")
+    else:
+        raise error  # Here we raise other errors to ensure they aren't ignored
 
 
 @bot.event
@@ -45,7 +85,9 @@ async def on_ready():
     print('Connected to API')
 
 
-@ bot.slash_command(name="boot", description="Boots the game server")
+@bot.slash_command(name="boot", description="Boots the game server")
+@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
+@discord.ext.commands.check(check_cooldown)
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -60,7 +102,9 @@ async def _boot(ctx):
         traceback.print_exc()
 
 
-@ bot.slash_command(name="shutdown", description="Shuts down the game server")
+@bot.slash_command(name="shutdown", description="Shuts down the game server")
+@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
+@discord.ext.commands.check(check_cooldown)
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -74,7 +118,9 @@ async def _shutdown(ctx):
         traceback.print_exc()
 
 
-@ bot.slash_command(name="reboot", description="Reboots the game server")
+@bot.slash_command(name="reboot", description="Reboots the game server")
+@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
+@discord.ext.commands.check(check_cooldown)
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
