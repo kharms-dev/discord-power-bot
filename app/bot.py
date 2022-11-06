@@ -7,6 +7,7 @@ import json
 import traceback
 import requests
 import discord
+from discord.ext import commands
 
 
 def env_defined(key):
@@ -58,18 +59,18 @@ async def on_application_command_error(ctx, error):
     """
     Responds to a user calling a function that's currently on cooldown.
     """
-    if isinstance(error, discord.ext.commands.CommandOnCooldown):
+    if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. \
-                            Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. " \
+                            f"Please wait another {cooldown}s before retrying.")
     elif isinstance(error, discord.errors.CheckFailure):
         boot_cd = bot.get_application_command(name="boot").is_on_cooldown(ctx)
         reboot_cd = bot.get_application_command(name="reboot").is_on_cooldown(ctx)
         shutdown_cd = bot.get_application_command(name="shutdown").is_on_cooldown(ctx)
         # Since only one command can ever be on an individual cooldown, addition works
         cooldown = round(boot_cd + reboot_cd + shutdown_cd)
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. \
-                            Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. " \
+                            f"Please wait another {cooldown}s before retrying.")
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
 
@@ -86,8 +87,8 @@ async def on_ready():
 
 
 @bot.slash_command(name="boot", description="Boots the game server")
-@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
-@discord.ext.commands.check(check_cooldown)
+@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.check(check_cooldown)
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -102,9 +103,14 @@ async def _boot(ctx):
         traceback.print_exc()
 
 
+@_boot.error
+async def _error(ctx, error):
+    await on_application_command_error(ctx, error)
+
+
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
-@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
-@discord.ext.commands.check(check_cooldown)
+@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.check(check_cooldown)
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -118,9 +124,14 @@ async def _shutdown(ctx):
         traceback.print_exc()
 
 
+@_shutdown.error
+async def _error(ctx, error):
+    await on_application_command_error(ctx, error)
+
+
 @bot.slash_command(name="reboot", description="Reboots the game server")
-@discord.ext.commands.cooldown(rate=1,per=COOLDOWN)
-@discord.ext.commands.check(check_cooldown)
+@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.check(check_cooldown)
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
@@ -132,6 +143,11 @@ async def _reboot(ctx):
     except Exception:
         await ctx.respond('Server is already offline')
         traceback.print_exc()
+
+
+@_reboot.error
+async def _error(ctx, error):
+    await on_application_command_error(ctx, error)
 
 
 @ bot.slash_command(name="status", description="Checks current power status of game server")
