@@ -87,7 +87,7 @@ async def on_ready():
 
 
 @bot.slash_command(name="boot", description="Boots the game server")
-@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
 async def _boot(ctx):
     try:
@@ -109,7 +109,7 @@ async def _error(ctx, error):
 
 
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
-@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
 async def _shutdown(ctx):
     try:
@@ -130,7 +130,7 @@ async def _error(ctx, error):
 
 
 @bot.slash_command(name="reboot", description="Reboots the game server")
-@commands.cooldown(rate=1,per=COOLDOWN)
+@commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
 async def _reboot(ctx):
     try:
