@@ -103,11 +103,6 @@ async def _boot(ctx):
         traceback.print_exc()
 
 
-@_boot.error
-async def _error(ctx, error):
-    await on_application_command_error(ctx, error)
-
-
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
 @commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
@@ -122,11 +117,6 @@ async def _shutdown(ctx):
     except Exception:
         await ctx.respond('Server is already offline')
         traceback.print_exc()
-
-
-@_shutdown.error
-async def _error(ctx, error):
-    await on_application_command_error(ctx, error)
 
 
 @bot.slash_command(name="reboot", description="Reboots the game server")
@@ -145,6 +135,8 @@ async def _reboot(ctx):
         traceback.print_exc()
 
 
+@_boot.error
+@_shutdown.error
 @_reboot.error
 async def _error(ctx, error):
     await on_application_command_error(ctx, error)
