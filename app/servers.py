@@ -35,7 +35,7 @@ class Server(Schema):
 server_list = {}
 
 
-def add_server(name: str, ip_address: str, port: int, server_type: str, password: str = "") -> dict:
+def add_server(name: str, ip_address: str, port: int, server_type: str, password: str = "") -> Server:
     """
     Adds a server to the actively monitored list
     """
@@ -62,23 +62,25 @@ def delete_server(name):
     """
     Deletes a server from the actively monitored list
     """
-    return server_list.pop(name)
+    if name == '*':
+        server_list.clear()
+    else:
+        server_list.pop(name)
 
 
-def update_server(name: str, server_info: dict) -> bool:
+def update_server(name: str, server_info: dict):
     """
     Updates a server entry in the bot's monitoring list
     Side note: this is essentially the same op as add_server
     but without the duplicate key check to allow for overwrites
     """
     try:
-        server = Server().load(server_info)
+        schema = Server()
+        server = schema.load(server_info)
         server_list[name] = server
-        return True
     except ValueError:
         logging.error("Failed to update server")
         traceback.print_exc()
-        return False
 
 
 def get_server(name):
@@ -88,7 +90,7 @@ def get_server(name):
     return server_list.get(name)
 
 
-def list_servers():
+def list_servers() -> dict:
     """
     Lists servers currently monitored by the bot
     """
@@ -100,8 +102,9 @@ def save_servers():
     Saves out server config to disk as json
     """
     server_serialised = []
+    schema = Server()
     for server in server_list.values():
-        server_serialised.append(server.__dict__)
+        server_serialised.append(schema.dump(server))
     _save_settings(server_serialised)
 
 
@@ -116,10 +119,7 @@ def load_servers():
                 raise TypeError(
                     f"Server type: '{server['server_type']}' \
                        for server '{server['name']}' is invalid")
-            server_obj = Server(name=server['name'], ip_address=server['ip_address'],
-                                port=server['port'], password=server['password'],
-                                server_type=ServerType(server['server_type']))
-            update_server(server['name'], server_obj)
+            update_server(server['name'], server)
     except Exception:
         logging.error("Couldn't load settings into bot")
         traceback.print_exc()
@@ -136,11 +136,9 @@ def _save_settings(jsonstring):
     except Exception:
         logging.error("Failed to save settings to disk")
         traceback.print_exc()
-        return 0
-    return 1
 
 
-def _load_settings():
+def _load_settings() -> dict:
     """
     Writes out server config settings to disk in json
     """
