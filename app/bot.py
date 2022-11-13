@@ -150,7 +150,7 @@ async def _error(ctx, error):
     await on_application_command_error(ctx, error)
 
 
-@ bot.slash_command(name="status",
+@bot.slash_command(name="status",
                     description="Checks current power status of game server")
 async def _status(ctx):
     try:
