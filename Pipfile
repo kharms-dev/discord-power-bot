@@ -13,3 +13,6 @@ autopep8 = "*"
 
 [requires]
 python_version = "3.8"
+
+[scripts]
+test = "python -m pytest --cov=app --cov-report=html"
