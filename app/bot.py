@@ -72,16 +72,16 @@ async def on_application_command_error(ctx, error):
     """
     if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. " \
-                            f"Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
+                          f'Please wait another {cooldown}s before retrying.')
     elif isinstance(error, discord.errors.CheckFailure):
         boot_cd = bot.get_application_command(name="boot").get_cooldown_retry_after(ctx)
         reboot_cd = bot.get_application_command(name="reboot").get_cooldown_retry_after(ctx)
         shutdown_cd = bot.get_application_command(name="shutdown").get_cooldown_retry_after(ctx)
         # Since only one command can ever be on an individual cooldown, addition works
         cooldown = round(boot_cd + reboot_cd + shutdown_cd)
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. " \
-                            f"Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
+                          f'Please wait another {cooldown}s before retrying.')
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
 
