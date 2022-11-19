@@ -36,6 +36,17 @@ if env_defined("COOLDOWN"):
 else:
     COOLDOWN = 300
 
+# Defaulting POWERBOT_ROLE to "@everyone" unless set by the user
+if env_defined("POWERBOT_ROLE"):
+    POWERBOT_ROLE = os.environ["POWERBOT_ROLE"].split(",")
+    # commands.has_any_role() takes either a role name as string,
+    # or a role ID as integer. Can't just map() a mixed list.
+    for i in range(0,len(POWERBOT_ROLE)):
+        if POWERBOT_ROLE[i].isdigit():
+            POWERBOT_ROLE[i] = int(POWERBOT_ROLE[i])
+else:
+    POWERBOT_ROLE = "@everyone"
+
 intents = discord.Intents.default()
 DESC = "Bot to control the power to physical game server"
 bot = discord.Bot(description=DESC, intents=intents)
@@ -89,6 +100,7 @@ async def on_ready():
 @bot.slash_command(name="boot", description="Boots the game server")
 @commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -106,6 +118,7 @@ async def _boot(ctx):
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
 @commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -122,6 +135,7 @@ async def _shutdown(ctx):
 @bot.slash_command(name="reboot", description="Reboots the game server")
 @commands.cooldown(rate=1,per=COOLDOWN,type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
@@ -142,7 +156,7 @@ async def _error(ctx, error):
     await on_application_command_error(ctx, error)
 
 
-@ bot.slash_command(name="status", description="Checks current power status of game server")
+@bot.slash_command(name="status", description="Checks current power status of game server")
 async def _status(ctx):
     try:
         response = requests.get(LIVENESS_URL, timeout=2)
