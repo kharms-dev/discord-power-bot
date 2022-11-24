@@ -5,11 +5,11 @@ import os
 import sys
 import json
 import traceback
+from asyncio import TimeoutError as asyncTimeoutError
+from typing import List
 import requests
 import discord
-from typing import List
 from discord.ext import commands
-
 
 def env_defined(key):
     """
@@ -77,7 +77,8 @@ async def on_application_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
         await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
-                          f'Please wait another {cooldown}s before retrying.')
+                          f'Please wait another {cooldown}s before retrying.'
+                          f'or retry with `/sudo {ctx.command.name}`.')
     elif isinstance(error, discord.errors.CheckFailure):
         boot_cd = bot.get_application_command(
             name="boot").get_cooldown_retry_after(ctx)
@@ -89,7 +90,8 @@ async def on_application_command_error(ctx, error):
         # addition works
         cooldown = round(boot_cd + reboot_cd + shutdown_cd)
         await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
-                          f'Please wait another {cooldown}s before retrying.')
+                          f'Please wait another {cooldown}s before retrying.'
+                          f'or retry with `/sudo {ctx.command.name}`.')
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
 
@@ -164,8 +166,43 @@ async def _error(ctx, error):
     await on_application_command_error(ctx, error)
 
 
+@bot.slash_command(name="sudo", description="Use commands regardless of their cooldown")
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
+@discord.option(
+    "command",
+    description = "Command to be run ignoring any cooldown.",
+    choices = ["boot", "reboot", "shutdown"]
+)
+async def _sudo(ctx, command):
+    """
+    Allows to bypass cooldowns that are usually placed upon power functions
+    by resetting them all and then invoking the supplied command.
+    """
+    embed = discord.Embed(type="rich", colour=discord.Colour.red())
+    embed.title = '<:warning:1043511363441537046>' \
+                  ' WARNING <:warning:1043511363441537046>'
+    embed.description = f'Are you sure that you want to force `{command}`? ' \
+                        'If yes, react with <:sos:1043671788007211108>.'
+    res = await ctx.respond(embed=embed)
+    msg = await res.original_response()
+    await msg.add_reaction('\N{Squared SOS}') # default emojis need to be unicode
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) == '\N{Squared SOS}'
+    try:
+        await bot.wait_for('reaction_add', timeout=5.0, check=check)
+    except asyncTimeoutError:
+        await msg.clear_reactions()
+    else:
+        bot.get_application_command(name="boot").reset_cooldown(ctx)
+        bot.get_application_command(name="reboot").reset_cooldown(ctx)
+        bot.get_application_command(name="shutdown").reset_cooldown(ctx)
+        await bot.get_application_command(command).invoke(ctx)
+        await ctx.respond(f'`{command}` executed.')
+
+
 @bot.slash_command(name="status",
-                    description="Checks current power status of game server")
+                   description="Checks current power status of game server")
 async def _status(ctx):
     try:
         response = requests.get(LIVENESS_URL, timeout=2)
