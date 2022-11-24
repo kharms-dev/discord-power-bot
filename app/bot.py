@@ -38,6 +38,17 @@ if env_defined("COOLDOWN"):
 else:
     COOLDOWN: int = 300
 
+# Defaulting POWERBOT_ROLE to "@everyone" unless set by the user
+if env_defined("POWERBOT_ROLE"):
+    POWERBOT_ROLE = os.environ["POWERBOT_ROLE"].split(",")
+    # commands.has_any_role() takes either a role name as string,
+    # or a role ID as integer. Can't just map() a mixed list.
+    for i in range(0,len(POWERBOT_ROLE)):
+        if POWERBOT_ROLE[i].isdigit():
+            POWERBOT_ROLE[i] = int(POWERBOT_ROLE[i])
+else:
+    POWERBOT_ROLE = "@everyone"
+
 intents = discord.Intents.default()
 DESC = "Bot to control the power to physical game server"
 bot = discord.Bot(description=DESC, intents=intents)
@@ -65,8 +76,8 @@ async def on_application_command_error(ctx, error):
     """
     if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. "
-                          f"Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
+                          f'Please wait another {cooldown}s before retrying.')
     elif isinstance(error, discord.errors.CheckFailure):
         boot_cd = bot.get_application_command(
             name="boot").get_cooldown_retry_after(ctx)
@@ -77,8 +88,8 @@ async def on_application_command_error(ctx, error):
         # Since only one command can ever be on an individual cooldown,
         # addition works
         cooldown = round(boot_cd + reboot_cd + shutdown_cd)
-        await ctx.respond(f"`/{ctx.command.name}` is currently on cooldown. "
-                          f"Please wait another {cooldown}s before retrying.")
+        await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
+                          f'Please wait another {cooldown}s before retrying.')
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
 
@@ -97,6 +108,7 @@ async def on_ready():
 @bot.slash_command(name="boot", description="Boots the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -114,6 +126,7 @@ async def _boot(ctx):
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -130,6 +143,7 @@ async def _shutdown(ctx):
 @bot.slash_command(name="reboot", description="Reboots the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
+@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
