@@ -10,9 +10,11 @@ py-cord = "==2.2.2"
 [dev-packages]
 pylint = "*"
 autopep8 = "*"
-
-[requires]
-python_version = "3.8"
+mypy = "*"
+coverage = "*"
+pytest-cov = "*"
+pytest = "*"
+exceptiongroup = "*"
 
 [scripts]
 test = "python -m pytest --cov=app --cov-report=html"
