@@ -2,47 +2,92 @@
 Queries SteamQuery, DCS and SpaceEngineers instances
 """
 import traceback
+import logging
 from steam import SteamQuery
 import network
-from servers import Server
+from servers import Server, ServerType, list_servers, get_server
 
 
-def get_players(ipaddress: int, port: int, password="") -> dict:
+def is_anyone_active() -> bool:
+    """
+    Checks all known servers for users currently logged in
+    returns a bool
+    """
+    try:
+        player_count = 0
+        for server in list_servers():
+            server = get_server(server)
+            player_count += get_players(server).get('current_players')
+        if player_count > 0:
+            return True
+        else:
+            return False
+    except:
+        logging.error("Couldn't query servers for active players")
+        traceback.print_exc()
+        raise
+
+
+def get_players(server: Server) -> dict:
     """
     Returns a dict with the current number of players connected
     to the server as well as the max players supported
     """
-    try:
-        server = _steam_server_connection(server_ip=ipaddress, port=port)
-        server_state = _lint_steamquery_output(server.query_server_info())
-        return {"current_players": server_state["players"],
-                "max_players": server_state["max_players"]}
+    if server['server_type'] is ServerType.STEAM:
+        try:
+            steamquery = _steam_server_connection(
+                server_ip=str(server['ip_address']), port=server['port'])
+            server_state = _lint_steamquery_output(
+                steamquery.query_server_info())
+            return {"current_players": server_state["players"],
+                    "max_players": server_state["max_players"]}
 
-    except Exception:
-        print("Could not get server info")
-        traceback.print_exc()
-        raise
+        except Exception:
+            print("Could not get server info")
+            traceback.print_exc()
+            raise
+    elif server['server_type'] is ServerType.SPACE_ENGINEERS:
+        return {"current_players": 0,
+                "max_players": 0}
+
+    elif server['server_type'] is ServerType.DCS:
+        return {"current_players": 0,
+                "max_players": 0}
+
+    else:
+        print(f'Cannot query unrecognised server type {server_type}')
 
 
-def get_players_details(ipaddress: int, port: int, password="") -> list:
+def get_players_details(server: Server) -> list:
     """
     Returns a list with all current player objects containing
     names, scores and durations on the server
     """
-    try:
-        server = _steam_server_connection(server_ip=ipaddress, port=port)
-        player_info = _lint_steamquery_output(server.query_player_info())
-        return player_info
+    if server['server_type'] is ServerType.STEAM:
+        try:
+            steamquery = _steam_server_connection(
+                server_ip=str(server['ip_address']), port=server['port'])
+            player_info = _lint_steamquery_output(
+                steamquery.query_player_info())
+            return player_info
 
-    except Exception:
-        print("Could not get player info")
-        traceback.print_exc()
-        raise
+        except Exception:
+            print("Could not get player info")
+            traceback.print_exc()
+            raise
+    elif server['server_type'] is ServerType.SPACE_ENGINEERS:
+        pass
+
+    elif server['server_type'] is ServerType.DCS:
+        pass
+
+    else:
+        print(f'Cannot query unrecognised server type {server_type}')
 
 # Creates and returns server connection object
 
 
-def _steam_server_connection(server_ip: int, port: int) -> object:
+def _steam_server_connection(server_ip: str, port: int) -> object:
     """
     Creates a steam query server connection object and passes it back.
     """

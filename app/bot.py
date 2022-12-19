@@ -10,6 +10,7 @@ from typing import List
 import requests
 import discord
 from discord.ext import commands
+import gamequery
 
 
 def env_defined(key):
@@ -134,12 +135,15 @@ async def _boot(ctx):
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _shutdown(ctx):
     try:
-        response = requests.get(SHUTDOWN_URL, timeout=2)
-        if response.status_code == 200:
-            game = discord.Activity(
-                name="Powering down...", type=discord.ActivityType.playing)
-            await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
-            await ctx.respond('Server shut down!')
+        if gamequery.is_anyone_active():
+            await ctx.respond('Server can\'t be shut down, someone is online!')
+        else:
+            response = requests.get(SHUTDOWN_URL, timeout=2)
+            if response.status_code == 200:
+                game = discord.Activity(
+                    name="Powering down...", type=discord.ActivityType.playing)
+                await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
+                await ctx.respond('Server shut down!')
     except Exception:
         await ctx.respond('Server is already offline')
         traceback.print_exc()
@@ -152,12 +156,15 @@ async def _shutdown(ctx):
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _reboot(ctx):
     try:
-        response = requests.get(REBOOT_URL, timeout=2)
-        if response.status_code == 200:
-            game = discord.Activity(
-                name="Rebooting...", type=discord.ActivityType.playing)
-            await bot.change_presence(status=discord.Status.streaming, activity=game)
-            await ctx.respond('Server rebooting!')
+        if gamequery.is_anyone_active():
+            await ctx.respond('Server can\'t be rebooted, someone is online!')
+        else:
+            response = requests.get(REBOOT_URL, timeout=2)
+            if response.status_code == 200:
+                game = discord.Activity(
+                    name="Rebooting...", type=discord.ActivityType.playing)
+                await bot.change_presence(status=discord.Status.streaming, activity=game)
+                await ctx.respond('Server rebooting!')
     except Exception:
         await ctx.respond('Server is already offline')
         traceback.print_exc()
