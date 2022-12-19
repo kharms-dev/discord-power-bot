@@ -35,7 +35,8 @@ class Server(Schema):
 server_list = {}
 
 
-def add_server(name: str, ip_address: str, port: int, server_type: str, password: str = "") -> Server:
+def add_server(name: str, ip_address: str, port: int, server_type: str,
+               password: str = "") -> Server:
     """
     Adds a server to the actively monitored list
     """
