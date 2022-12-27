@@ -16,5 +16,8 @@ pytest-cov = "*"
 pytest = "*"
 exceptiongroup = "*"
 
+[requires]
+python_version = "3.11"
+
 [scripts]
 test = "python -m pytest --cov=app --cov-report=html"
