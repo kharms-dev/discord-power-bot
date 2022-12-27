@@ -5,11 +5,19 @@ name = "pypi"
 
 [packages]
 requests = "==2.28.1"
-py-cord = "==2.2.2"
+py-cord = "==2.3.2"
 
 [dev-packages]
 pylint = "*"
 autopep8 = "*"
+mypy = "*"
+coverage = "*"
+pytest-cov = "*"
+pytest = "*"
+exceptiongroup = "*"
 
 [requires]
 python_version = "3.11"
+
+[scripts]
+test = "python -m pytest --cov=app --cov-report=html"
