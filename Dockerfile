@@ -1,4 +1,4 @@
-FROM python:3.8-alpine@sha256:7c7063333021414512e2d47232eae8cbdec46a2724265c6817f9eab29ca6e3c8 as base
+FROM python:3.11-alpine@sha256:2e23d6cd236ffccc88db47e7520f67cfb5cd9dd62b8d534d3249834930cc226e as base
 
 LABEL org.opencontainers.image.authors="Myles Gray"
 LABEL org.opencontainers.image.source='https://github.com/mylesagray/discord-power-bot'
