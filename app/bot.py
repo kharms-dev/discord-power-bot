@@ -11,6 +11,7 @@ import requests
 import discord
 from discord.ext import commands
 
+
 def env_defined(key):
     """
     Checks if a given env var key is defined in the OS environment
@@ -43,7 +44,7 @@ if env_defined("POWERBOT_ROLE"):
     POWERBOT_ROLE = os.environ["POWERBOT_ROLE"].split(",")
     # commands.has_any_role() takes either a role name as string,
     # or a role ID as integer. Can't just map() a mixed list.
-    for i in range(0,len(POWERBOT_ROLE)):
+    for i in range(0, len(POWERBOT_ROLE)):
         if POWERBOT_ROLE[i].isdigit():
             POWERBOT_ROLE[i] = int(POWERBOT_ROLE[i])
 else:
@@ -110,7 +111,8 @@ async def on_ready():
 @bot.slash_command(name="boot", description="Boots the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
-@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
+# https://github.com/Pycord-Development/pycord/issues/974
+@commands.has_any_role(*POWERBOT_ROLE)
 async def _boot(ctx):
     try:
         response = requests.get(WOL_URL, timeout=2)
@@ -128,7 +130,8 @@ async def _boot(ctx):
 @bot.slash_command(name="shutdown", description="Shuts down the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
-@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
+# https://github.com/Pycord-Development/pycord/issues/974
+@commands.has_any_role(*POWERBOT_ROLE)
 async def _shutdown(ctx):
     try:
         response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -145,7 +148,8 @@ async def _shutdown(ctx):
 @bot.slash_command(name="reboot", description="Reboots the game server")
 @commands.cooldown(rate=1, per=float(COOLDOWN), type=commands.BucketType.guild)
 @commands.check(check_cooldown)
-@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
+# https://github.com/Pycord-Development/pycord/issues/974
+@commands.has_any_role(*POWERBOT_ROLE)
 async def _reboot(ctx):
     try:
         response = requests.get(REBOOT_URL, timeout=2)
@@ -167,11 +171,12 @@ async def _error(ctx, error):
 
 
 @bot.slash_command(name="sudo", description="Use commands regardless of their cooldown")
-@commands.has_any_role(*POWERBOT_ROLE) # https://github.com/Pycord-Development/pycord/issues/974
+# https://github.com/Pycord-Development/pycord/issues/974
+@commands.has_any_role(*POWERBOT_ROLE)
 @discord.option(
     "command",
-    description = "Command to be run ignoring any cooldown.",
-    choices = ["boot", "reboot", "shutdown"]
+    description="Command to be run ignoring any cooldown.",
+    choices=["boot", "reboot", "shutdown"]
 )
 async def _sudo(ctx, command):
     """
@@ -185,7 +190,8 @@ async def _sudo(ctx, command):
                         'If yes, react with <:sos:1043671788007211108>.'
     res = await ctx.respond(embed=embed)
     msg = await res.original_response()
-    await msg.add_reaction('\N{Squared SOS}') # default emojis need to be unicode
+    # default emojis need to be unicode
+    await msg.add_reaction('\N{Squared SOS}')
 
     def check(reaction, user):
         return user == ctx.author and str(reaction.emoji) == '\N{Squared SOS}'
