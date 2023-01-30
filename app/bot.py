@@ -155,7 +155,8 @@ async def _shutdown(ctx):
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _reboot(ctx):
-       if gamequery.is_anyone_active():
+    try:
+        if gamequery.is_anyone_active():
             await ctx.respond('Server can\'t be rebooted, someone is online!')
         else:
             response = requests.get(REBOOT_URL, timeout=2)
