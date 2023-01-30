@@ -3,6 +3,7 @@
 ## Usage
 
 * Fill out `.env` file with your Discord token and URLs.
+* Fill out `servers.json` with your server details and types to allow querying of clients on power requests
 * Optional: set `COOLDOWN` for `boot`, `reboot` and `shutdown` cooldown timers in seconds, if left empty it defaults to `300`.
 * Optional: set `POWERBOT_ROLE` to limit access to `boot`, `reboot` and `shutdown`. This takes a comma separated list of either role names or role ids, if left unset defaults to the `@everyone` role.
 
@@ -18,5 +19,5 @@ docker compose up -d
 Bare docker cli:
 
 ```sh
-docker run --env-file=/.env --restart=unless-stopped ghcr.io/mylesagray/discord-power-bot:latest
+docker run --env-file=/.env --restart=unless-stopped -v servers.json:/home/appuser/servers.json ghcr.io/mylesagray/discord-power-bot:latest
 ```
