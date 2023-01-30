@@ -2,6 +2,10 @@
 Tests for server module
 """
 import unittest
+from ipaddress import IPv4Address, IPv6Address
+
+from marshmallow import ValidationError
+
 from app import servers
 
 
@@ -40,31 +44,30 @@ class AddServersTests(unittest.TestCase):
         arma_server = servers.add_server(
             'Arma Server 1', '172.16.69.180', 2303, 'STEAM')
         se_server = servers.add_server(
-            'Space Engineers Server 1', '192.168.1.179', 27019, 'SPACE_ENGINEERS')
+            'Space Engineers Server 1', 'fe80::a00:20ff:feb9:17fa', 27019, 'SPACE_ENGINEERS')
 
-        self.assertIsInstance(dcs_server, servers.Server)
-        self.assertEqual(dcs_server.name, 'DCS Server 1')
-        self.assertEqual(dcs_server.ip_address, '10.56.0.175')
-        self.assertEqual(dcs_server.port, 10309)
-        self.assertEqual(dcs_server.server_type, servers.ServerType.DCS)
-        self.assertIsInstance(arma_server, servers.Server)
-        self.assertEqual(arma_server.name, 'Arma Server 1')
-        self.assertEqual(arma_server.ip_address, '172.16.69.180')
-        self.assertEqual(arma_server.port, 2303)
-        self.assertEqual(arma_server.server_type, servers.ServerType.STEAM)
-        self.assertIsInstance(se_server, servers.Server)
-        self.assertEqual(se_server.name, 'Space Engineers Server 1')
-        self.assertEqual(se_server.ip_address, '192.168.1.179')
-        self.assertEqual(se_server.port, 27019)
-        self.assertEqual(se_server.server_type,
+        self.assertEqual(dcs_server['name'], 'DCS Server 1')
+        self.assertEqual(dcs_server['ip_address'], IPv4Address('10.56.0.175'))
+        self.assertEqual(dcs_server['port'], 10309)
+        self.assertEqual(dcs_server['server_type'], servers.ServerType.DCS)
+        self.assertEqual(arma_server['name'], 'Arma Server 1')
+        self.assertEqual(arma_server['ip_address'],
+                         IPv4Address('172.16.69.180'))
+        self.assertEqual(arma_server['port'], 2303)
+        self.assertEqual(arma_server['server_type'], servers.ServerType.STEAM)
+        self.assertEqual(se_server['name'], 'Space Engineers Server 1')
+        self.assertEqual(se_server['ip_address'],
+                         IPv6Address('fe80::a00:20ff:feb9:17fa'))
+        self.assertEqual(se_server['port'], 27019)
+        self.assertEqual(se_server['server_type'],
                          servers.ServerType.SPACE_ENGINEERS)
 
     def test_add_servers_invalid_server_type(self):
         """
-        Tests if a TypeError is thrown if an invalid type is specified
+        Tests if a marshmallow.exceptions.ValidationError is thrown if an invalid type is specified
         """
 
-        self.assertRaises(TypeError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test', '10.0.0.1', 1000, 'FAIL')
 
     def test_add_servers_duplicate_name(self):
@@ -81,11 +84,11 @@ class AddServersTests(unittest.TestCase):
         Tests if a ValueError is thrown if a port outside valid 1-65535 range is set
         """
 
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test2', '10.0.0.1', 65536, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test3', '10.0.0.1', -1, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test4', '10.0.0.1', 0, 'DCS')
 
     def test_add_servers_invalid_ipv4(self):
@@ -93,13 +96,13 @@ class AddServersTests(unittest.TestCase):
         Tests if a ValueError is thrown if an invalid IPv4 address is supplied
         """
 
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test5', '12345', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test6', '256.256.256.256', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test7', '1.2.3.4.5', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test8', 'string', 1000, 'DCS')
 
     def test_add_servers_invalid_ipv6(self):
@@ -107,13 +110,13 @@ class AddServersTests(unittest.TestCase):
         Tests if a ValueError is thrown if an invalid IPv6 address is supplied
         """
 
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test9', '12345', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test10', '256.256.256.256', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test11', '1.2.3.4.5', 1000, 'DCS')
-        self.assertRaises(ValueError, servers.add_server,
+        self.assertRaises(ValidationError, servers.add_server,
                           'Test12', 'string', 1000, 'DCS')
 
 
@@ -129,7 +132,7 @@ class DeleteServersTests(unittest.TestCase):
 
         servers.add_server('Delete me', '10.56.0.175', 10309, 'DCS')
 
-        self.assertTrue(servers.delete_server('Delete me'))
+        self.assertIsNone(servers.delete_server('Delete me'))
 
     def test_delete_servers_raise_key_error(self):
         """
@@ -151,20 +154,57 @@ class UpdateServersTests(unittest.TestCase):
         """
 
         servers.add_server('Update me', '10.0.0.1', 1000, 'DCS')
-        update = servers.Server('Update me', '1.1.1.1',
-                                1000, 'password', servers.ServerType.DCS)
+        server_info = {
+            'name': 'Update me',
+            'ip_address': '1.1.1.1',
+            'port': 1000,
+            'server_type': 'DCS',
+            'password': 'password'
+        }
 
-        self.assertTrue(servers.update_server('Update me', update))
+        self.assertIsNone(servers.update_server('Update me', server_info))
 
     def test_update_servers_invalid_type(self):
         """
         Tests if Server is successfully updated
         """
 
-        update = servers.Server('Update me fail', '1.1.1.1',
-                                1000, 'password', servers.ServerType.DCS)
+        with self.assertRaises(ValidationError):
+            server_info = {
+                'name': 'Update me',
+                'ip_address': '1.1.1.1',
+                'port': 1000,
+                'server_type': 'Fail',
+                'password': 'password'
+            }
+            servers.update_server('Update me', server_info)
 
-        self.assertFalse(servers.update_server('Update me fail', update))
+
+class SerialiseDeserialiseServersTest(unittest.TestCase):
+    """
+    Class to test data (de)serialisation
+    """
+
+    def test_data_serialise_equal_deserialise(self):
+        """
+        Tests that objects are successfully serialised to disk
+        """
+        servers.delete_server('*')
+
+        server_list = {}
+        server_list['DCS Server Serialise'] = servers.add_server(
+            'DCS Server Serialise', '10.56.0.175', 10309, 'DCS')
+        server_list['Arma Server Serialise'] = servers.add_server(
+            'Arma Server Serialise', '172.16.69.180', 2303, 'STEAM')
+        server_list['Space Engineers Server Serialise'] = servers.add_server(
+            'Space Engineers Server Serialise', 'fe80::a00:20ff:feb9:17fa',
+            27019, 'SPACE_ENGINEERS')
+
+        self.assertIsNone(servers.save_servers())
+        self.assertIsNone(servers.load_servers())
+        print(servers.list_servers())
+        print(server_list)
+        self.assertEqual(servers.list_servers(), server_list)
 
 
 if __name__ == '__main__':

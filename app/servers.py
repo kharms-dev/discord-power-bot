@@ -5,8 +5,8 @@ server config info
 import traceback
 import json
 import logging
-from dataclasses import dataclass
 from enum import Enum
+from marshmallow import Schema, fields, validate
 
 logging.basicConfig(level=logging.WARN)
 
@@ -20,34 +20,38 @@ class ServerType(str, Enum):
     SPACE_ENGINEERS = 'SPACE_ENGINEERS'
 
 
-@dataclass
-class Server:
+class Server(Schema):
     """
     Object that stores a given game server
     configuration
     """
-    name: str
-    ip_address: str
-    port: int
-    server_type: ServerType
-    password: str
+    name = fields.Str()
+    ip_address = fields.IP()
+    port = fields.Int(validate=validate.Range(1, 65535))
+    password = fields.Str()
+    server_type = fields.Enum(ServerType)
 
 
 server_list = {}
 
 
-def add_server(name, ip_address, port, server_type, password=""):
+def add_server(name: str, ip_address: str, port: int, server_type: str,
+               password: str = "") -> Server:
     """
     Adds a server to the actively monitored list
     """
     try:
         if not name in server_list:
-            if server_type in ServerType.__members__:
-                server = Server(name=name, ip_address=ip_address,
-                                port=port, server_type=ServerType[server_type], password=password)
-                server_list[name] = server
-                return server
-            raise TypeError(f"Server type '{server_type}' is invalid")
+            server_info = {
+                'name': name,
+                'ip_address': ip_address,
+                'port': port,
+                'server_type': server_type,
+                'password': password
+            }
+            server = Server().load(server_info)
+            server_list[name] = server
+            return server
         raise ValueError("Server name already taken")
     except Exception:
         logging.error("Failed to add server")
@@ -59,27 +63,25 @@ def delete_server(name):
     """
     Deletes a server from the actively monitored list
     """
-    try:
-        return server_list.pop(name)
-    except KeyError:
-        logging.error(f"Failed to delete server, '{name}' does not exist.")
-        traceback.print_exc()
-        raise
+    if name == '*':
+        server_list.clear()
+    else:
+        server_list.pop(name)
 
 
-def update_server(name, server):
+def update_server(name: str, server_info: dict):
     """
     Updates a server entry in the bot's monitoring list
     Side note: this is essentially the same op as add_server
     but without the duplicate key check to allow for overwrites
     """
     try:
+        schema = Server()
+        server = schema.load(server_info)
         server_list[name] = server
-        return True
-    except Exception:
+    except ValueError:
         logging.error("Failed to update server")
         traceback.print_exc()
-        raise
 
 
 def get_server(name):
@@ -89,7 +91,7 @@ def get_server(name):
     return server_list.get(name)
 
 
-def list_servers():
+def list_servers() -> dict:
     """
     Lists servers currently monitored by the bot
     """
@@ -101,8 +103,9 @@ def save_servers():
     Saves out server config to disk as json
     """
     server_serialised = []
+    schema = Server()
     for server in server_list.values():
-        server_serialised.append(server.__dict__)
+        server_serialised.append(schema.dump(server))
     _save_settings(server_serialised)
 
 
@@ -117,10 +120,7 @@ def load_servers():
                 raise TypeError(
                     f"Server type: '{server['server_type']}' \
                        for server '{server['name']}' is invalid")
-            server_obj = Server(name=server['name'], ip_address=server['ip_address'],
-                                port=server['port'], password=server['password'],
-                                server_type=ServerType(server['server_type']))
-            update_server(server['name'], server_obj)
+            update_server(server['name'], server)
     except Exception:
         logging.error("Couldn't load settings into bot")
         traceback.print_exc()
@@ -137,11 +137,9 @@ def _save_settings(jsonstring):
     except Exception:
         logging.error("Failed to save settings to disk")
         traceback.print_exc()
-        return 0
-    return 1
 
 
-def _load_settings():
+def _load_settings() -> dict:
     """
     Writes out server config settings to disk in json
     """
