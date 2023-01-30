@@ -51,6 +51,15 @@ if env_defined("POWERBOT_ROLE"):
 else:
     POWERBOT_ROLE = "@everyone"
 
+# Defaulting SUDO_ROLE to POWERBOT_ROLE unless set by the user
+if env_defined("SUDO_ROLE"):
+    SUDO_ROLE = os.environ["SUDO_ROLE"].split(",")
+    for i in range(0, len(SUDO_ROLE)):
+        if SUDO_ROLE[i].isdigit():
+            SUDO_ROLE[i] = int(SUDO_ROLE[i])
+else:
+    SUDO_ROLE = POWERBOT_ROLE
+
 intents = discord.Intents.default()
 DESC = "Bot to control the power to physical game server"
 bot = discord.Bot(description=DESC, intents=intents)
@@ -155,7 +164,8 @@ async def _shutdown(ctx):
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _reboot(ctx):
-       if gamequery.is_anyone_active():
+    try:
+        if gamequery.is_anyone_active():
             await ctx.respond('Server can\'t be rebooted, someone is online!')
         else:
             response = requests.get(REBOOT_URL, timeout=2)
@@ -178,7 +188,7 @@ async def _error(ctx, error):
 
 @bot.slash_command(name="sudo", description="Use commands regardless of their cooldown")
 # https://github.com/Pycord-Development/pycord/issues/974
-@commands.has_any_role(*POWERBOT_ROLE)
+@commands.has_any_role(*SUDO_ROLE)
 @discord.option(
     "command",
     description="Command to be run ignoring any cooldown.",
