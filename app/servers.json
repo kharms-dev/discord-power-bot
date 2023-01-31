@@ -1,0 +1,23 @@
+[
+    {
+        "ip_address": "0.1.2.3",
+        "name": "Arma - Antistasi",
+        "password": "",
+        "port": 2303,
+        "server_type": "STEAM"
+    },
+    {
+        "ip_address": "254.1.2.3",
+        "name": "Space Engineers Instance",
+        "password": "",
+        "port": 27019,
+        "server_type": "SPACE_ENGINEERS"
+    },
+    {
+        "ip_address": "127.0.0.1",
+        "name": "DCS Server",
+        "password": "",
+        "port": 10308,
+        "server_type": "DCS"
+    }
+]
