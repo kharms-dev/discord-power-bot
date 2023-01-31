@@ -107,8 +107,8 @@ async def on_application_command_error(ctx, error):
 
     elif isinstance(error, commands.errors.MissingAnyRole):
         await ctx.respond(f'Sorry, you don\'t have the required role to use `/{ctx.command.name}`'
-                          f'Ask an adult to add you to one of these roles: {POWERBOT_ROLE}'
-                          f'or for /sudo commands: {SUDO_ROLE}')
+                          f' , ask an adult to add you to one of these roles: `{POWERBOT_ROLE}`'
+                          f' , or for `/sudo` commands: `{SUDO_ROLE}`')
 
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
