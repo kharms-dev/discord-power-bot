@@ -5,7 +5,7 @@ import traceback
 import logging
 from steam import SteamQuery
 import network
-from servers import Server, ServerType, list_servers, get_server
+from servers import Server, ServerType, list_servers, load_servers, get_server
 
 
 def is_anyone_active() -> bool:
@@ -15,6 +15,8 @@ def is_anyone_active() -> bool:
     """
     try:
         player_count = 0
+        if list_servers() == {}:
+            load_servers()
         for server in list_servers():
             server = get_server(server)
             player_count += get_players(server).get('current_players')
