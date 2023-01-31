@@ -90,6 +90,7 @@ async def on_application_command_error(ctx, error):
         await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
                           f'Please wait another {cooldown}s before retrying.'
                           f'or retry with `/sudo {ctx.command.name}`.')
+
     elif isinstance(error, discord.errors.CheckFailure):
         boot_cd = bot.get_application_command(
             name="boot").get_cooldown_retry_after(ctx)
@@ -103,6 +104,12 @@ async def on_application_command_error(ctx, error):
         await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
                           f'Please wait another {cooldown}s before retrying.'
                           f'or retry with `/sudo {ctx.command.name}`.')
+
+    elif isinstance(error, commands.errors.MissingAnyRole):
+        await ctx.respond(f'Sorry, you don\'t have the required role to use `/{ctx.command.name}`'
+                          f'Ask an adult to add you to one of these roles: {POWERBOT_ROLE}'
+                          f'or for /sudo commands: {SUDO_ROLE}')
+
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
 
