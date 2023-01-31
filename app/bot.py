@@ -124,6 +124,9 @@ async def on_ready():
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _boot(ctx):
+    """
+    Boots the server, returns an error message if any exception is caught
+    """
     try:
         response = requests.get(WOL_URL, timeout=2)
         jsonresponse = json.loads(response.content.decode())
@@ -143,8 +146,12 @@ async def _boot(ctx):
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _shutdown(ctx):
+    """
+    Shuts down the server under the condition of no player being online and 
+    the function not being called via sudo
+    """
     try:
-        if gamequery.is_anyone_active():
+        if gamequery.is_anyone_active() and not ctx.author == 'sudo':
             await ctx.respond('Server can\'t be shut down, someone is online!')
         else:
             response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -164,8 +171,12 @@ async def _shutdown(ctx):
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*POWERBOT_ROLE)
 async def _reboot(ctx):
+    """
+    reboots the server under the condition of no player being online and
+    the function not being called via sudo
+    """
     try:
-        if gamequery.is_anyone_active():
+        if gamequery.is_anyone_active() and not ctx.author == 'sudo':
             await ctx.respond('Server can\'t be rebooted, someone is online!')
         else:
             response = requests.get(REBOOT_URL, timeout=2)
@@ -198,6 +209,7 @@ async def _sudo(ctx, command):
     """
     Allows to bypass cooldowns that are usually placed upon power functions
     by resetting them all and then invoking the supplied command.
+    Sets the command author to override the online check.
     """
     embed = discord.Embed(type="rich", colour=discord.Colour.red())
     embed.title = '<:warning:1043511363441537046>' \
@@ -219,7 +231,8 @@ async def _sudo(ctx, command):
         bot.get_application_command(name="boot").reset_cooldown(ctx)
         bot.get_application_command(name="reboot").reset_cooldown(ctx)
         bot.get_application_command(name="shutdown").reset_cooldown(ctx)
-        await bot.get_application_command(command).invoke(ctx)
+        ctx.author = 'sudo'
+        await ctx.invoke(bot.get_application_command(command))
         await ctx.respond(f'`{command}` executed.')
 
 
