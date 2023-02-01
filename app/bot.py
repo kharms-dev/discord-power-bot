@@ -49,7 +49,7 @@ if env_defined("POWERBOT_ROLE"):
         if POWERBOT_ROLE[i].isdigit():
             POWERBOT_ROLE[i] = int(POWERBOT_ROLE[i])
 else:
-    POWERBOT_ROLE = ["@everyone"]
+    POWERBOT_ROLE = ['@everyone']
 
 # Defaulting SUDO_ROLE to POWERBOT_ROLE unless set by the user
 if env_defined("SUDO_ROLE"):
@@ -106,9 +106,11 @@ async def on_application_command_error(ctx, error):
                           f'or retry with `/sudo {ctx.command.name}`.')
 
     elif isinstance(error, commands.errors.MissingAnyRole):
-        await ctx.respond(f'Sorry, you don\'t have the required role to use `/{ctx.command.name}`'
-                          f' , ask an adult to add you to one of these roles: `{POWERBOT_ROLE}`'
-                          f' , or for `/sudo` commands: `{SUDO_ROLE}`')
+        await ctx.respond(f'Sorry, you don\'t have the required role to use `/{ctx.command.name}`. '
+                          f'Ask an adult to add you to one of these roles: '
+                          f'`{", ".join(str(x) for x in POWERBOT_ROLE)}`'
+                          f', or for `/sudo` commands: '
+                          f'`{", ".join(str(x) for x in SUDO_ROLE)}`')
 
     else:
         raise error  # Here we raise other errors to ensure they aren't ignored
@@ -197,13 +199,6 @@ async def _reboot(ctx):
         traceback.print_exc()
 
 
-@_boot.error
-@_shutdown.error
-@_reboot.error
-async def _error(ctx, error):
-    await on_application_command_error(ctx, error)
-
-
 @bot.slash_command(name="sudo", description="Use commands regardless of their cooldown")
 # https://github.com/Pycord-Development/pycord/issues/974
 @commands.has_any_role(*SUDO_ROLE)
@@ -260,5 +255,18 @@ async def _status(ctx):
         await ctx.respond('Server is offline')
         print("Server host is offline")
         traceback.print_exc()
+
+
+@_boot.error
+@_shutdown.error
+@_reboot.error
+@_sudo.error
+async def _error(ctx, error):
+    """
+    Combined function to handle failed role checks,
+    raises all further exceptions
+    """
+    await on_application_command_error(ctx, error)
+
 
 bot.run(DISCORD_TOKEN)
