@@ -49,7 +49,7 @@ if env_defined("POWERBOT_ROLE"):
         if POWERBOT_ROLE[i].isdigit():
             POWERBOT_ROLE[i] = int(POWERBOT_ROLE[i])
 else:
-    POWERBOT_ROLE = "@everyone"
+    POWERBOT_ROLE = ["@everyone"]
 
 # Defaulting SUDO_ROLE to POWERBOT_ROLE unless set by the user
 if env_defined("SUDO_ROLE"):
