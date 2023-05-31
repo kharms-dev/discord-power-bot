@@ -80,6 +80,18 @@ def check_cooldown(ctx):
             return False
     return True
 
+def get_cooldown(ctx):
+    """
+    Returns the shared cooldown in seconds
+    """
+    boot_cd = bot.get_application_command(
+        name="boot").get_cooldown_retry_after(ctx)
+    reboot_cd = bot.get_application_command(
+        name="reboot").get_cooldown_retry_after(ctx)
+    shutdown_cd = bot.get_application_command(
+        name="shutdown").get_cooldown_retry_after(ctx)
+    return round(boot_cd + reboot_cd + shutdown_cd)
+
 
 async def on_application_command_error(ctx, error):
     """
@@ -88,22 +100,24 @@ async def on_application_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         cooldown = round(ctx.command.get_cooldown_retry_after(ctx))
         await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
-                          f'Please wait another {cooldown}s before retrying.'
+                          f'Please wait another {cooldown}s before retrying, '
                           f'or retry with `/sudo {ctx.command.name}`.')
 
     elif isinstance(error, discord.errors.CheckFailure):
-        boot_cd = bot.get_application_command(
-            name="boot").get_cooldown_retry_after(ctx)
-        reboot_cd = bot.get_application_command(
-            name="reboot").get_cooldown_retry_after(ctx)
-        shutdown_cd = bot.get_application_command(
-            name="shutdown").get_cooldown_retry_after(ctx)
         # Since only one command can ever be on an individual cooldown,
-        # addition works
-        cooldown = round(boot_cd + reboot_cd + shutdown_cd)
-        await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
-                          f'Please wait another {cooldown}s before retrying.'
-                          f'or retry with `/sudo {ctx.command.name}`.')
+        # addition works. One could get a cooldown via ctx.command.name
+        # but we can't artificially set a cooldown, so this is the way
+        # to link all commands to a shared CD
+        cooldown = get_cooldown(ctx)
+        sudoer = False
+        for role in ctx.author.roles:
+            if role.id in SUDO_ROLE or str(role.name) in SUDO_ROLE:
+                sudoer = True
+        if sudoer:
+            await _sudo(ctx, command=ctx.command.name)
+        else:
+            await ctx.respond(f'`/{ctx.command.name}` is currently on cooldown. '
+                              f'Please wait another {cooldown}s before retrying.')
 
     elif isinstance(error, commands.errors.MissingAnyRole):
         await ctx.respond(f'Sorry, you don\'t have the required role to use `/{ctx.command.name}`. '
@@ -216,8 +230,14 @@ async def _sudo(ctx, command):
     embed = discord.Embed(type="rich", colour=discord.Colour.red())
     embed.title = '<:warning:1043511363441537046>' \
                   ' WARNING <:warning:1043511363441537046>'
-    embed.description = f'Are you sure that you want to force `{command}`? ' \
-                        'If yes, react with <:sos:1043671788007211108>.'
+    cooldown = get_cooldown(ctx)
+    if cooldown > 0:
+        embed.description = f'Are you sure that you want to force `{command}`? ' \
+                            f'It\'s still on cooldown for another {cooldown}s. ' \
+                            'If yes, react with <:sos:1043671788007211108>.'
+    else:
+        embed.description = f'Are you sure that you want to force `{command}`? ' \
+                            'If yes, react with <:sos:1043671788007211108>.'
     res = await ctx.respond(embed=embed)
     msg = await res.original_response()
     # default emojis need to be unicode
