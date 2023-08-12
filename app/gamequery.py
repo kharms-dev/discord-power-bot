@@ -64,7 +64,8 @@ def get_players(server: Server) -> dict:
 
             print(f"Server live: {server_live}")
             print(server_info["data"])
-            print(api.)
+            # Saves the current session state
+            # api.query('/vrageremote/v1/session','patch')
             player_count = server_info["data"]["Players"]
 
             for player in players["data"]["Players"]:
