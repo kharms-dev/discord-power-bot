@@ -4,6 +4,7 @@ Queries SteamQuery, DCS and SpaceEngineers instances
 import traceback
 import logging
 from steam import SteamQuery
+from vrage_api.vrage_api import VRageAPI
 import network
 from servers import Server, ServerType, list_servers, load_servers, get_server
 
@@ -48,9 +49,36 @@ def get_players(server: Server) -> dict:
             print("Could not get server info")
             traceback.print_exc()
             raise
+
     elif server['server_type'] is ServerType.SPACE_ENGINEERS:
-        return {"current_players": 0,
-                "max_players": 0}
+        try:
+            server_api_address = "http://" + \
+                str(server['ip_address']) + ":" + str(server['port'])
+            api = VRageAPI(url=server_api_address, token=server['password'])
+            players = api.get_players()
+            server_ping = api.get_server_ping()
+            server_info = api.get_server_info()
+
+            if server_ping["data"]["Result"] == "Pong":
+                server_live = True
+            else:
+                server_live = False
+
+            print(f"Server live: {server_live}")
+            print(server_info["data"])
+            # Saves the current session state
+            # api.query('/vrageremote/v1/session','patch')
+            player_count = server_info["data"]["Players"]
+
+            for player in players["data"]["Players"]:
+                print(player["SteamID"], player["DisplayName"])
+
+            return {"current_players": player_count, "max_players": 99}
+
+        except Exception:
+            print("Could not get server info")
+            traceback.print_exc()
+            raise
 
     elif server['server_type'] is ServerType.DCS:
         return {"current_players": 0,
@@ -82,9 +110,9 @@ def get_players_details(server: Server) -> list:
 
     elif server['server_type'] is ServerType.DCS:
         pass
+
     else:
         print(f'Cannot query unrecognised server type {server_type}')
-
 
 # Creates and returns server connection object
 
