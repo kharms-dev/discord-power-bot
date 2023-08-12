@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1b2cae087533d526c48b5740606fd9cca704f7f925322cafd50cf07f679ad5e9"
+            "sha256": "2fb2062a1d093db7a90ee0816258c9a421a739c13475991b8542baf26b9ffd3a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -464,6 +464,14 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
             "version": "==1.26.16"
+        },
+        "vrage-api": {
+            "hashes": [
+                "sha256:c2e56c6f9320ce57130e422366d4cee9f2d6759243330d5435f01873ac9089e2",
+                "sha256:cb396569244b318573eb69496037e8d2b31788be140b172147160c4bbfc3b1b4"
+            ],
+            "index": "pypi",
+            "version": "==0.0.4"
         },
         "yarl": {
             "hashes": [
