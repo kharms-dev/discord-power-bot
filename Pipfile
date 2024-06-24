@@ -11,6 +11,7 @@ marshmallow = "*"
 marshmallow-dataclass = "*"
 vrage-api = "*"
 loguru = "*"
+mcstatus = "*"
 
 [dev-packages]
 pylint = "*"

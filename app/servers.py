@@ -18,6 +18,8 @@ class ServerType(str, Enum):
     STEAM = 'STEAM'
     DCS = 'DCS'
     SPACE_ENGINEERS = 'SPACE_ENGINEERS'
+    MINECRAFT_JAVA = 'MINECRAFT_JAVA'
+    MINECRAFT_BEDROCK = 'MINECRAFT_BEDROCK'
 
 
 class Server(Schema):
