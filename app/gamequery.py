@@ -46,7 +46,10 @@ def get_players(server: Server) -> dict:
                 steamquery.query_server_info())
             return {"current_players": server_state["players"],
                     "max_players": server_state["max_players"]}
-
+        except ConnectionError:
+            print("Could not connect to ArmA server, connection error")
+            traceback.print_exc()
+            pass
         except Exception:
             print("Could not get ArmA server info")
             traceback.print_exc()
@@ -76,7 +79,10 @@ def get_players(server: Server) -> dict:
                 print(player["SteamID"], player["DisplayName"])
 
             return {"current_players": player_count, "max_players": 99}
-
+        except ConnectionError:
+            print("Could not connect to SE server, connection error")
+            traceback.print_exc()
+            pass
         except Exception:
             print("Could not get Space Engineers server info")
             traceback.print_exc()
@@ -88,7 +94,10 @@ def get_players(server: Server) -> dict:
             status = server.status()
             return {"current_players": status.players.online,
                     "max_players": status.players.max}
-
+        except ConnectionError:
+            print("Could not connect to Minecraft Java server, connection error")
+            traceback.print_exc()
+            pass
         except Exception:
             print("Could not get Minecraft JE server info")
             traceback.print_exc()
@@ -100,7 +109,10 @@ def get_players(server: Server) -> dict:
             status = server.status()
             return {"current_players": status.players.online,
                     "max_players": status.players.max}
-
+        except ConnectionError:
+            print("Could not connect to Minecraft Bedrock server, connection error")
+            traceback.print_exc()
+            pass
         except Exception:
             print("Could not get Minecraft Bedrock server info")
             traceback.print_exc()

@@ -184,7 +184,7 @@ async def _shutdown(ctx):
                 await bot.change_presence(status=discord.Status.do_not_disturb, activity=game)
                 await ctx.respond('Server shut down!')
     except Exception:
-        await ctx.respond('Server is already offline')
+        await ctx.respond('Server is already offline or gameservers are down')
         traceback.print_exc()
 
 
