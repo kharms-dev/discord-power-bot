@@ -1,10 +1,12 @@
 """
-Queries SteamQuery, DCS and SpaceEngineers instances
+Queries SteamQuery, DCS, Minecraft and SpaceEngineers instances
 """
 import traceback
 import logging
-from steam import SteamQuery
-from vrage_api.vrage_api import VRageAPI
+from steam import SteamQuery #SteamQuery
+from mcstatus import JavaServer #Minecraft Java
+from mcstatus import BedrockServer #Minecraft Bedrock
+from vrage_api.vrage_api import VRageAPI #SpaceEngineers
 import network
 from servers import Server, ServerType, list_servers, load_servers, get_server
 
@@ -46,7 +48,7 @@ def get_players(server: Server) -> dict:
                     "max_players": server_state["max_players"]}
 
         except Exception:
-            print("Could not get server info")
+            print("Could not get ArmA server info")
             traceback.print_exc()
             raise
 
@@ -76,11 +78,36 @@ def get_players(server: Server) -> dict:
             return {"current_players": player_count, "max_players": 99}
 
         except Exception:
-            print("Could not get server info")
+            print("Could not get Space Engineers server info")
+            traceback.print_exc()
+            raise
+
+    elif server['server_type'] is ServerType.MINECRAFT_JAVA:
+        try:
+            server = JavaServer(str(server['ip_address']), server['port'])
+            status = server.status()
+            return {"current_players": status.players.online,
+                    "max_players": status.players.max}
+
+        except Exception:
+            print("Could not get Minecraft JE server info")
+            traceback.print_exc()
+            raise
+
+    elif server['server_type'] is ServerType.MINECRAFT_BEDROCK:
+        try:
+            server = BedrockServer(str(server['ip_address']), server['port'])
+            status = server.status()
+            return {"current_players": status.players.online,
+                    "max_players": status.players.max}
+
+        except Exception:
+            print("Could not get Minecraft Bedrock server info")
             traceback.print_exc()
             raise
 
     elif server['server_type'] is ServerType.DCS:
+        ##TODO myles
         return {"current_players": 0,
                 "max_players": 0}
 
@@ -109,6 +136,14 @@ def get_players_details(server: Server) -> list:
         pass
 
     elif server['server_type'] is ServerType.DCS:
+        pass
+
+    elif server['server_type'] is ServerType.MINECRAFT_JAVA:
+        #https://mcstatus.readthedocs.io/en/stable/api/basic/#mcstatus.status_response.JavaStatusPlayer
+        #https://mcstatus.readthedocs.io/en/stable/api/basic/#mcstatus.querier.QueryResponse
+        pass
+
+    elif server['server_type'] is ServerType.MINECRAFT_BEDROCK:
         pass
 
     else:
