@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3472381010e095a9d716e24b56202be34bfd6dacc359259358267d12789e7d37"
+            "sha256": "14b384b5e073d86e75659d3a7f222357f94c23daac57c4607e72513299a82df7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -386,7 +386,7 @@
                 "sha256:b2856ee4032faf810b0c6af10a141381e6115caf14a7348c47edc8e3da84f5d4"
             ],
             "index": "pypi",
-            "markers": "python_full_version >= '3.8.1' and python_version < '4'",
+            "markers": "python_version < '4' and python_full_version >= '3.8.1'",
             "version": "==11.1.1"
         },
         "multidict": {
@@ -503,21 +503,21 @@
         },
         "py-cord": {
             "hashes": [
-                "sha256:90dc29599812fca42f187b27e6b6e9fab88a977b782ae750b2dd742a0168bb15",
-                "sha256:9fdaa9bf899c9fb724f56dea7abb975fbceee5667607880d0f5a40043c4f073d"
+                "sha256:0266c9d9a9d2397622a0e5ead09826690e688ba3cf14c470167b81e6cd2d8a56",
+                "sha256:862a372c364cd263e2c8e696c64887f969c02cbdf0fdd6b09f0283e9dd67a290"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.8'",
-            "version": "==2.3.2"
+            "version": "==2.4.1"
         },
         "requests": {
             "hashes": [
-                "sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa",
-                "sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf"
+                "sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f",
+                "sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1"
             ],
             "index": "pypi",
-            "markers": "python_version >= '3.7' and python_version < '4'",
-            "version": "==2.28.2"
+            "markers": "python_version >= '3.7'",
+            "version": "==2.31.0"
         },
         "setuptools": {
             "hashes": [
@@ -560,11 +560,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:37a0344459b199fce0e80b0d3569837ec6b6937435c5244e7fd73fa6006830f3",
-                "sha256:3e3d753a8618b86d7de333b4223005f68720bcd6a7d2bcb9fbd2229ec7c1e429"
+                "sha256:a448b2f64d686155468037e1ace9f2d2199776e17f0a46610480d311f73e3472",
+                "sha256:dd505485549a7a552833da5e6063639d0d177c04f23bc3864e41e5dc5f612168"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
-            "version": "==1.26.19"
+            "markers": "python_version >= '3.8'",
+            "version": "==2.2.2"
         },
         "vrage-api": {
             "hashes": [
