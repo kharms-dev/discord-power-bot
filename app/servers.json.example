@@ -19,5 +19,12 @@
         "password": "",
         "port": 10308,
         "server_type": "DCS"
+    },
+    {
+        "ip_address": "minecraft.example.com",
+        "name": "Minecraft Server",
+        "password": "",
+        "port": 25565,
+        "server_type": "MINECRAFT_JAVA"
     }
 ]

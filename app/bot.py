@@ -174,7 +174,9 @@ async def _shutdown(ctx):
     the function not being called via sudo
     """
     try:
-        if gamequery.is_anyone_active() and not ctx.author == 'sudo':
+        #TODO:myles - Add failed server query feedback to user
+        is_anyone_active = gamequery.is_anyone_active()
+        if is_anyone_active[0] and not ctx.author == 'sudo':
             await ctx.respond('Server can\'t be shut down, someone is online!')
         else:
             response = requests.get(SHUTDOWN_URL, timeout=2)
@@ -199,7 +201,9 @@ async def _reboot(ctx):
     the function not being called via sudo
     """
     try:
-        if gamequery.is_anyone_active() and not ctx.author == 'sudo':
+        #TODO:myles - Add failed server query feedback to user
+        is_anyone_active = gamequery.is_anyone_active()
+        if is_anyone_active[0] and not ctx.author == 'sudo':
             await ctx.respond('Server can\'t be rebooted, someone is online!')
         else:
             response = requests.get(REBOOT_URL, timeout=2)

@@ -3,9 +3,13 @@ Provides functions for establishing network locations and
 communications, port and IP verification
 """
 import traceback
+import logging
 from ipaddress import ip_address, IPv6Address, IPv4Address
 
 import requests
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='network.log', level=logging.INFO)
 
 # Gets the external IP address where the server is running
 # this assumes that the outbound IP after NAT and inbound IP
@@ -25,11 +29,11 @@ def get_external_ip() -> str:
     try:
         response = requests.get('https://ifconfig.me/ip', timeout=5)
         server_ip = response.content.decode()
-        print(f'Discovered IP address is {server_ip}')
+        logger.info(f'Discovered IP address is {server_ip}')
         return str(server_ip)
 
     except Exception:
-        print("External IP could not be found, ifconfig.me may be down or blocked")
+        logger.error("External IP could not be found, ifconfig.me may be down or blocked")
         traceback.print_exc()
         raise
 
@@ -47,7 +51,7 @@ def valid_ip_address(ipaddress: int) -> int:
             return False
 
     except ValueError:
-        print("IP address is invalid")
+        logger.error("IP address is invalid")
         traceback.print_exc()
         raise
 
@@ -61,11 +65,11 @@ def valid_port(port: int) -> bool:
     try:
         port = int(port)
         if port > 0 and port <= 65535:
-            print(f'PORT {port} is valid')
+            logger.info(f'PORT {port} is valid')
             return True
         raise ValueError(f'PORT {port} is not in valid range 1-65535')
 
     except Exception:
-        print("PORT is not valid")
+        logger.warning("PORT is not valid")
         traceback.print_exc()
         raise
