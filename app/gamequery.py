@@ -129,6 +129,7 @@ def get_players(server: Server) -> dict:
             raise
 
     elif server['server_type'] is ServerType.DCS:
+        logger.info("Querying DCS server: %s", server['name'])
         ##TODO myles
         logger.info("%s has 0/0 players active", server['name'])
         return {"current_players": 0,
