@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 requests = "==2.32.3"
-py-cord = "==2.4.1"
+py-cord = "==2.5.0"
 steamquery = "==1.0.2"
 marshmallow = "*"
 marshmallow-dataclass = "*"
