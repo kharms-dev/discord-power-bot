@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requests = "==2.32.3"
+requests = "==2.34.2"
 py-cord = "==2.5.0"
 steamquery = "==1.0.2"
 marshmallow = "*"
